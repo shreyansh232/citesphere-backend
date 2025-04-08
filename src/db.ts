@@ -45,11 +45,11 @@ const contentSchema = new mongoose.Schema({
     },
   ],
   link: { type: String, required: true },
-  userId: {
+  userId: [{
     type: mongoose.Types.ObjectId,
     ref: "User",
     required: true,
-  },
+  },]
 });
 
 export const Content = mongoose.model("Content", contentSchema);

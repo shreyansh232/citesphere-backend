@@ -58,8 +58,20 @@ app.get("/api/v1/content", userMiddleware, async (req, res) => {
 
   const content = await Content.find({
     userId: userId,
-  });
+  }).populate("userId", "username"); //populate the userId with the information of the user
 
   res.json({ content });
 });
+
+
+app.delete("/api/v1/content", userMiddleware,async(req, res) => {
+  const contentId = req.body.contentId;
+  //@ts-ignore
+  await Content.deleteMany({contentId, userId: req.userId});
+
+  res.json({message: "Content deleted successfully"});
+
+
+});
+
 app.listen(8001, () => console.log("Server Started"));
