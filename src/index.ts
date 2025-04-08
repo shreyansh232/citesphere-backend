@@ -1,10 +1,11 @@
 import express from "express";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
-import { Content, User } from "./db";
+import { Content, Link, User } from "./db";
 import { JWT_SECRET } from "./config";
 import cors from "cors";
 import { userMiddleware } from "./middleware";
+import { random } from "./utils";
 
 const app = express();
 
@@ -63,15 +64,50 @@ app.get("/api/v1/content", userMiddleware, async (req, res) => {
   res.json({ content });
 });
 
-
-app.delete("/api/v1/content", userMiddleware,async(req, res) => {
+app.delete("/api/v1/content", userMiddleware, async (req, res) => {
   const contentId = req.body.contentId;
   //@ts-ignore
-  await Content.deleteMany({contentId, userId: req.userId});
+  await Content.deleteMany({ contentId, userId: req.userId });
 
-  res.json({message: "Content deleted successfully"});
+  res.json({ message: "Content deleted successfully" });
+});
 
+app.post("/api/v1/brain/share", userMiddleware, async (req, res) => {
+  const { share } = req.body;
+  if (share) {
+    //@ts-ignore
+    const existingLink = await Link.findOne({ userId: req.userId });
+    if (existingLink) {
+      res.json({ hash: existingLink.hash });
+      return;
+    }
+    const hash = random(10);
+    //@ts-ignore
+    await Link.create({ userId: req.userId, hash });
+    res.json({ hash });
+  } else {
+    //@ts-ignore
+    await Link.deleteMany({ userId: req.userId });
+    res.json({ message: "Removed Link" });
+  }
+});
 
+app.get("/api/v1/brain/:shareLink", async (req, res) => {
+  const hash = req.params.shareLink;
+
+  const link = await Link.findOne({ hash });
+  if (!link) {
+    res.status(404).json({ message: "Link not found" });
+    return;
+  }
+  const content = await Content.find({ userId: link.userId });
+  const user = await User.findOne({ _id: link.userId });
+
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+  res.json({ username: user.username, content });
 });
 
 app.listen(8001, () => console.log("Server Started"));
