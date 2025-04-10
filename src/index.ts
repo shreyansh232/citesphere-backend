@@ -9,9 +9,9 @@ import { random } from "./utils";
 
 const app = express();
 
-app.use(express.json()); // Middleware to parse JSON request bodies.
-app.use(express.urlencoded({ extended: false }));
 app.use(cors());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json()); // Middleware to parse JSON request bodies.
 app.post("/api/v1/signup", async (req, res) => {
   const { username, password } = req.body;
 
