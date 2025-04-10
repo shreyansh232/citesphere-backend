@@ -37,7 +37,7 @@ const contentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // type: { type: String, enum: contentTypes, required: true },
+  type: String,
   tags: [
     {
       type: mongoose.Types.ObjectId,

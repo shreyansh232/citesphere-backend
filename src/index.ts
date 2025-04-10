@@ -1,5 +1,4 @@
 import express from "express";
-import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import { Content, Link, User } from "./db";
 import { JWT_SECRET } from "./config";
@@ -12,6 +11,10 @@ const app = express();
 app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json()); // Middleware to parse JSON request bodies.
+
+app.get("/", (req, res) => {
+  res.send('hi');
+});
 app.post("/api/v1/signup", async (req, res) => {
   const { username, password } = req.body;
 
@@ -41,7 +44,7 @@ app.post("/api/v1/signin", async (req, res) => {
 });
 
 app.post("/api/v1/content", userMiddleware, async (req, res) => {
-  const { link, title } = req.body;
+  const { link, title, type } = req.body;
 
   await Content.create({
     title,
@@ -49,6 +52,7 @@ app.post("/api/v1/content", userMiddleware, async (req, res) => {
     //@ts-ignore
     userId: req.userId,
     tags: [],
+    type,
   });
   res.json({ message: "Content added successfully" });
 });
