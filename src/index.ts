@@ -5,6 +5,7 @@ import { JWT_SECRET } from "./config";
 import cors from "cors";
 import { userMiddleware } from "./middleware";
 import { random } from "./utils";
+import z from "zod";
 
 const app = express();
 
@@ -12,11 +13,28 @@ app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json()); // Middleware to parse JSON request bodies.
 
+const signupSchema = z.object({
+  username: z.string().min(3).max(30),
+  password: z.string().min(6),
+});
+
+const signinSchema = z.object({
+  username: z.string().min(3).max(30),
+  password: z.string().min(6),
+});
+
 app.get("/", (req, res) => {
-  res.send('hi');
+  res.send("hi");
 });
 app.post("/api/v1/signup", async (req, res) => {
   const { username, password } = req.body;
+
+  const parsedInput = signupSchema.safeParse({ username, password });
+
+  if (!parsedInput.success) {
+    res.status(411).json({ message: "Incorrect inputs" });
+    return;
+  }
 
   //Use a try-catch block if something can fail
   try {
@@ -32,6 +50,13 @@ app.post("/api/v1/signup", async (req, res) => {
 
 app.post("/api/v1/signin", async (req, res) => {
   const { username, password } = req.body;
+
+  const parsedInput = signinSchema.safeParse({ username, password });
+
+  if (!parsedInput.success) {
+    res.status(411).json({ message: "Incorrect inputs" });
+    return;
+  }
 
   const existingUser = await User.findOne({ username, password });
 
