@@ -1,7 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import { Content, Link, User } from "./db";
-import { JWT_SECRET } from "./config";
 import cors from "cors";
 import { userMiddleware } from "./middleware";
 import { random } from "./utils";
@@ -11,7 +10,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json()); // Middleware to parse JSON request bodies.
+app.use(express.json());
 
 const signupSchema = z.object({
   username: z.string().min(3).max(30),
@@ -61,7 +60,8 @@ app.post("/api/v1/signin", async (req, res) => {
   const existingUser = await User.findOne({ username, password });
 
   if (existingUser) {
-    const token = jwt.sign({ id: existingUser._id }, JWT_SECRET);
+    //@ts-ignore
+    const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET);
     res.json({ token });
   } else {
     res.status(403).json({ message: "Inccorect credentials" });
